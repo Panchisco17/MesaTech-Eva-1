@@ -30,7 +30,7 @@ function App() {
   const realizarPeticion = async (endpoint, method = "GET", body = null, isJson = true) => {
     try {
       const responseAuth = await instance.acquireTokenSilent({ ...loginRequest, account: accounts[0] });
-      const url = `https://y6omvgc6f0.execute-api.us-east-1.amazonaws.com/desarrollo/api/${endpoint}`;
+      const url = `https://f6u6p0l5k6.execute-api.us-east-1.amazonaws.com/desarrollo/api/${endpoint}`;
       
       const options = {
         method,
