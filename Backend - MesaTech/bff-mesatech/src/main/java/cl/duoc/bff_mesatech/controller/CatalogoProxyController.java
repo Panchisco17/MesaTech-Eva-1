@@ -1,5 +1,6 @@
 package cl.duoc.bff_mesatech.controller;
 
+import org.springframework.beans.factory.annotation.Value; // IMPORTANTE: Agregar este import
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -9,11 +10,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 @RestController
-@RequestMapping("/api") // Cambiamos la ruta base para permitir múltiples versiones
+@RequestMapping("/api")
 public class CatalogoProxyController {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String msCatalogUrl = "http://localhost:8082"; // Puerto correcto de tu Catálogo
+
+    // ¡AQUÍ ESTÁ EL CAMBIO! Ahora lee la variable del application.properties
+    @Value("${url.microservicio.catalogo}")
+    private String msCatalogUrl;
 
     // PROXY VERSIÓN 1: GET
     @GetMapping("/v1/productos")
@@ -28,7 +32,7 @@ public class CatalogoProxyController {
         String url = msCatalogUrl + "/api/v1/productos";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        
+
         HttpEntity<String> requestEntity = new HttpEntity<>(productoJson, headers);
         return restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
     }
@@ -38,5 +42,17 @@ public class CatalogoProxyController {
     public ResponseEntity<String> obtenerProductosProxyV2() {
         String url = msCatalogUrl + "/api/v2/productos";
         return restTemplate.getForEntity(url, String.class);
+    }
+
+    // --- NUEVAS RUTAS PARA CATEGORÍAS (EP2) ---
+
+    @PostMapping("/v1/categorias")
+    public ResponseEntity<String> crearCategoriaProxy(@RequestBody String categoriaJson) {
+        String url = msCatalogUrl + "/api/v1/categorias";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(categoriaJson, headers);
+        return restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
     }
 }

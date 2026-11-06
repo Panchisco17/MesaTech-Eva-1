@@ -1,5 +1,6 @@
 package cl.duoc.bff_mesatech.controller;
 
+import org.springframework.beans.factory.annotation.Value; // IMPORTANTE: Agregar este import
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -12,7 +13,10 @@ import org.springframework.web.client.RestTemplate;
 public class SolicitudProxyController {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String msOrdersUrl = "http://localhost:8081";
+
+    // ¡AQUÍ ESTÁ EL CAMBIO! Ahora lee la variable del application.properties
+    @Value("${url.microservicio.solicitudes}")
+    private String msOrdersUrl;
 
     @GetMapping("/api/v1/solicitudes")
     public ResponseEntity<String> listarSolicitudesProxy() {
