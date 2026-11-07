@@ -1,12 +1,13 @@
 package cl.duoc.bff_mesatech.controller;
 
-import org.springframework.beans.factory.annotation.Value; // IMPORTANTE: Agregar este import
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpStatusCodeException; // <-- Importante para atrapar el 400
 import org.springframework.web.client.RestTemplate;
 
 @RestController
@@ -14,30 +15,38 @@ public class SolicitudProxyController {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    // ¡AQUÍ ESTÁ EL CAMBIO! Ahora lee la variable del application.properties
     @Value("${url.microservicio.solicitudes}")
     private String msOrdersUrl;
 
     @GetMapping("/api/v1/solicitudes")
     public ResponseEntity<String> listarSolicitudesProxy() {
         String url = msOrdersUrl + "/v1/solicitudes";
-        return restTemplate.getForEntity(url, String.class);
+        try {
+            return restTemplate.getForEntity(url, String.class);
+        } catch (HttpStatusCodeException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }
     }
 
     @GetMapping("/api/v1/solicitudes/{id}")
     public ResponseEntity<String> obtenerSolicitudPorIdProxy(@PathVariable Long id) {
         String url = msOrdersUrl + "/v1/solicitudes/" + id;
-        return restTemplate.getForEntity(url, String.class);
+        try {
+            return restTemplate.getForEntity(url, String.class);
+        } catch (HttpStatusCodeException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }
     }
 
-    // --- ¡NUEVO MÉTODO AGREGADO! ---
-    // Este puente permite que React pregunte por las solicitudes de un usuario específico
     @GetMapping("/api/v1/solicitudes/usuario/{email}")
     public ResponseEntity<String> listarSolicitudesPorUsuarioProxy(@PathVariable String email) {
         String url = msOrdersUrl + "/v1/solicitudes/usuario/" + email;
-        return restTemplate.getForEntity(url, String.class);
+        try {
+            return restTemplate.getForEntity(url, String.class);
+        } catch (HttpStatusCodeException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }
     }
-    // -------------------------------
 
     @PostMapping("/api/v1/solicitudes")
     public ResponseEntity<String> crearSolicitudProxy(@RequestBody String solicitudJson) {
@@ -45,7 +54,11 @@ public class SolicitudProxyController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> requestEntity = new HttpEntity<>(solicitudJson, headers);
-        return restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+        try {
+            return restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+        } catch (HttpStatusCodeException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }
     }
 
     @PutMapping("/api/v1/solicitudes/{id}")
@@ -54,13 +67,21 @@ public class SolicitudProxyController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> requestEntity = new HttpEntity<>(solicitudJson, headers);
-        return restTemplate.exchange(url, HttpMethod.PUT, requestEntity, String.class);
+        try {
+            return restTemplate.exchange(url, HttpMethod.PUT, requestEntity, String.class);
+        } catch (HttpStatusCodeException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }
     }
 
     @DeleteMapping("/api/v1/solicitudes/{id}")
     public ResponseEntity<String> eliminarSolicitudProxy(@PathVariable Long id) {
         String url = msOrdersUrl + "/v1/solicitudes/" + id;
-        return restTemplate.exchange(url, HttpMethod.DELETE, null, String.class);
+        try {
+            return restTemplate.exchange(url, HttpMethod.DELETE, null, String.class);
+        } catch (HttpStatusCodeException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }
     }
 
     @PutMapping("/api/v1/solicitudes/{id}/estado")
@@ -69,7 +90,13 @@ public class SolicitudProxyController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> requestEntity = new HttpEntity<>(estado, headers);
-        return restTemplate.exchange(url, HttpMethod.PUT, requestEntity, String.class);
+
+        try {
+            return restTemplate.exchange(url, HttpMethod.PUT, requestEntity, String.class);
+        } catch (HttpStatusCodeException e) {
+            // El BFF atrapa el 400 Bad Request del microservicio y lo envía limpio a Postman
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }
     }
 
     @PutMapping("/api/v2/solicitudes/{id}/estado")
@@ -78,6 +105,11 @@ public class SolicitudProxyController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> requestEntity = new HttpEntity<>(dto, headers);
-        return restTemplate.exchange(url, HttpMethod.PUT, requestEntity, String.class);
+
+        try {
+            return restTemplate.exchange(url, HttpMethod.PUT, requestEntity, String.class);
+        } catch (HttpStatusCodeException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }
     }
 }

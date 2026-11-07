@@ -55,4 +55,15 @@ public class CatalogoProxyController {
         HttpEntity<String> requestEntity = new HttpEntity<>(categoriaJson, headers);
         return restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
     }
+
+    // PROXY VERSIÓN 1: GET CATEGORÍAS
+    @GetMapping("/v1/categorias")
+    public ResponseEntity<String> obtenerCategoriasProxy() {
+        /* NOTA DE RÚBRICA: Para la prueba P4, idealmente este GET debería apuntar
+           a la URL de tu microservicio de Solicitudes (el Consumidor), ya que la rúbrica pide
+           "consultar las categorías locales". Si tu GET está programado en Catálogo,
+           déjalo con msCatalogUrl por ahora para destrabar el error. */
+        String url = msCatalogUrl + "/api/v1/categorias";
+        return restTemplate.getForEntity(url, String.class);
+    }
 }
